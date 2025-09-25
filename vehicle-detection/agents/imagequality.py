@@ -89,7 +89,6 @@ if __name__ == "__main__":
     print("Processable:", result["processable"])
     print("Manipulation Detected:", result["manipulation_detected"])
 
-    # Show original vs enhanced images side by side
     combined = np.hstack((image, result["enhanced_image"]))
     cv2.imshow("Original (Left) vs Enhanced (Right)", combined)
     cv2.waitKey(0)
