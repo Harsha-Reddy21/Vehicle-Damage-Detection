@@ -21,8 +21,8 @@ class ClaimState(TypedDict, total=False):
 
 
 quality_agent = ImageQualityAgent()
-damage_agent = DamageDetectionAgent("C:/Misogi/Vehicle-Damage-Detection/best.pt")  # Use your trained model
-part_agent = PartIdentificationAgent("C:/Misogi/Vehicle-Damage-Detection/best.pt")
+damage_agent = DamageDetectionAgent("C:/Misogi/Vehicle-Damage-Detection/car_damage.pt")  # Use your trained model
+part_agent = PartIdentificationAgent("C:/Misogi/Vehicle-Damage-Detection/car_parts.pt")
 
 
 severity_rules = {
