@@ -14,17 +14,21 @@ class SeverityAssessmentAgent:
         score += total_area / 10  # scale area contribution
 
         
-        critical_parts = {"windshield", "engine", "airbags", "hood"}
-        for part in identified_parts:
-            if part["part_name"] in critical_parts:
-                score += 3
-
         
-        if score < 3:
+        if score==0:
+            return {
+                "overall_severity": "minor",
+                "severity_score": 0,
+                "repair_category": "cosmetic_repair",
+                "estimated_cost_range": [0, 0],
+                "repair_time_days": 0
+            }
+        
+        if score < 1:
             severity = "minor"
-        elif score < 7:
+        elif score < 2:
             severity = "moderate"
-        elif score < 12:
+        elif score <3 :
             severity = "major"
         else:
             severity = "severe"
@@ -34,6 +38,7 @@ class SeverityAssessmentAgent:
         repair_days = self.severity_rules[severity]["repair_days"]
 
         
+        
         return {
             "overall_severity": severity,
             "severity_score": round(score, 2),
@@ -41,32 +46,5 @@ class SeverityAssessmentAgent:
             "estimated_cost_range": cost_range,
             "repair_time_days": repair_days
         }
-
-
-severity_rules = {
-    "minor": {"cost_range": [100, 200], "repair_days": 1},
-    "moderate": {"cost_range": [200, 400], "repair_days": 2},
-    "major": {"cost_range": [400, 800], "repair_days": 3},
-    "severe": {"cost_range": [800, 1600], "repair_days": 4}
-}
-
-if __name__ == "__main__":
-    damage_data = {
-    "total_damage_area": 15.5,
-    "detections": [
-        {"bbox": [100, 200, 400, 500], "confidence": 0.92, "damage_type": "dent"}
-    ]
-    }
-
-    part_data = {
-        "damaged_parts": [
-            {"part_name": "front_bumper", "damage_percentage": 30, "bbox": [100, 200, 400, 500]},
-            {"part_name": "hood", "damage_percentage": 20, "bbox": [120, 220, 420, 520]}
-        ]
-    }
-
-    agent = SeverityAssessmentAgent(severity_rules)
-    result = agent.process(damage_data, part_data)
-    print(result)
 
 
