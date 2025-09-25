@@ -22,7 +22,7 @@ class ClaimState(TypedDict, total=False):
 # Initialize agents
 quality_agent = ImageQualityAgent()
 damage_agent = DamageDetectionAgent("C:/Misogi/Vehicle-Damage-Detection/best.pt")  # Use your trained model
-part_agent = PartIdentificationAgent()
+part_agent = PartIdentificationAgent("C:/Misogi/Vehicle-Damage-Detection/best.pt")
 
 
 severity_rules = {
@@ -67,8 +67,6 @@ def step_damage(state: ClaimState) -> ClaimState:
     img = state["processed_image"]  # Use processed/enhanced image
     result = damage_agent.process(img)
     
-    print(f"Damage Detection - Found {len(result['detections'])} damages, Total area: {result['total_damage_area']}%")
-    
     return {
         **state,
         "damage_result": result
@@ -79,10 +77,7 @@ workflow.add_node("damage_detection", step_damage)
 # 3. Part Identification
 def step_parts(state: ClaimState) -> ClaimState:
     img = state["processed_image"]
-    detections = state["damage_result"]["detections"]
-    result = part_agent.process(img, detections)
-    
-    print(f"Part Identification - {len(result['damaged_parts'])} parts identified")
+    result = part_agent.process(img)
     
     return {
         **state,
@@ -160,10 +155,10 @@ if __name__ == "__main__":
         
         # Parts Summary
         parts = final_state.get("part_result", {})
-        damaged_parts = parts.get("damaged_parts", [])
-        print(f"Damaged Parts: {len(damaged_parts)}")
-        for part in damaged_parts:
-            print(f"  - {part['part_name']}: {part['damage_percentage']}% damaged")
+        identified_parts = parts.get("identified_parts", [])
+        print(f"Identified Parts: {len(identified_parts)}")
+        for part in identified_parts:
+            print(f"  - {part['part_name']}: {part['confidence']:.2f} confidence")
         
         # Severity Summary
         severity = final_state.get("severity_result", {})

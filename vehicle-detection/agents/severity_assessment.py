@@ -4,7 +4,8 @@ class SeverityAssessmentAgent:
 
     def process(self, damage_data, part_data):
         
-        num_parts = len(part_data["damaged_parts"])
+        identified_parts = part_data.get("identified_parts", [])
+        num_parts = len(identified_parts)
         total_area = damage_data["total_damage_area"]
 
         
@@ -14,7 +15,7 @@ class SeverityAssessmentAgent:
 
         
         critical_parts = {"windshield", "engine", "airbags", "hood"}
-        for part in part_data["damaged_parts"]:
+        for part in identified_parts:
             if part["part_name"] in critical_parts:
                 score += 3
 

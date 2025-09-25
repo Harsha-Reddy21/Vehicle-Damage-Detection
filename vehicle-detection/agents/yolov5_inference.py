@@ -144,7 +144,8 @@ class YOLOv5Detector:
         
         return results
     
-    def print_results(self, results):        """Print detection results in a formatted way."""
+    def print_results(self, results):
+        """Print detection results in a formatted way."""
         for result in results:
             print(f"\nDetection Results for {result['image_path']}:")
             if result['detection_count'] > 0:
