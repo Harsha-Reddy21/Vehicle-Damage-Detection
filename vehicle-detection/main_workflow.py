@@ -68,7 +68,6 @@ def step_damage(state: ClaimState) -> ClaimState:
     result = damage_agent.process(img)
     
     return {
-        **state,
         "damage_result": result
     }
 
@@ -80,7 +79,6 @@ def step_parts(state: ClaimState) -> ClaimState:
     result = part_agent.process(img)
     
     return {
-        **state,
         "part_result": result
     }
 
@@ -96,7 +94,6 @@ def step_severity(state: ClaimState) -> ClaimState:
     print(f"Estimated Cost: ${result['estimated_cost_range'][0]}-${result['estimated_cost_range'][1]}")
     
     return {
-        **state,
         "severity_result": result
     }
 
@@ -106,8 +103,11 @@ workflow.add_node("severity_assessment", step_severity)
 # -----------------------------
 
 workflow.set_entry_point("quality_check")
+# Parallel execution: both damage detection and part identification run after quality check
 workflow.add_edge("quality_check", "damage_detection")
-workflow.add_edge("damage_detection", "part_identification")
+workflow.add_edge("quality_check", "part_identification")
+# Both need to complete before severity assessment
+workflow.add_edge("damage_detection", "severity_assessment")
 workflow.add_edge("part_identification", "severity_assessment")
 workflow.add_edge("severity_assessment", END)
 
