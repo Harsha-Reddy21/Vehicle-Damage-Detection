@@ -3,7 +3,7 @@ from typing import Dict, List, Any, TypedDict, Optional
 import cv2
 import os
 
-# Import all the agents
+
 from agents.imagequality import ImageQualityAgent
 from agents.damage_detection import DamageDetectionAgent
 from agents.part_identification import PartIdentificationAgent
@@ -24,7 +24,7 @@ quality_agent = ImageQualityAgent()
 damage_agent = DamageDetectionAgent("C:/Misogi/Vehicle-Damage-Detection/best.pt")  # Use your trained model
 part_agent = PartIdentificationAgent()
 
-# Severity rules
+
 severity_rules = {
     "minor": {"cost_range": [100, 500], "repair_days": 1},
     "moderate": {"cost_range": [500, 1500], "repair_days": 3},
