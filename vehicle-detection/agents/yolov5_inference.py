@@ -19,20 +19,9 @@ from utils.dataloaders import LoadImages
 from utils.torch_utils import select_device
 
 class YOLOv5Detector:
-    """
-    YOLOv5 Detector class that loads the model once and reuses it for multiple inferences.
-    """
     
     def __init__(self, weights_path, device='', img_size=640):
-        """
-        Initialize the YOLOv5 detector.
-        
-        Args:
-            weights_path (str): Path to your trained YOLOv5 weights (e.g., best.pt).
-            device (str): Device to run inference on ('', 'cpu', '0', '1', etc.).
-            img_size (int): Image size for inference (default=640).
-        """
-        print("Loading YOLOv5 model...")
+
         start_time = time.time()
         
         # Initialize
@@ -49,25 +38,9 @@ class YOLOv5Detector:
             self.model.warmup(imgsz=(1, 3, img_size, img_size))
         
         load_time = time.time() - start_time
-        print(f"Model loaded successfully in {load_time:.2f}s")
-        print(f"Classes: {list(self.names.values())}")
     
     def detect(self, source, conf_thres=0.25, save_results=True, save_dir='runs/detect/exp', 
                save_original=True, save_annotated=True):
-        """
-        Run inference on a single image or batch of images.
-        
-        Args:
-            source (str): Path to image/video, folder, URL, or 0 for webcam.
-            conf_thres (float): Confidence threshold (default=0.25).
-            save_results (bool): Whether to save results (controls both original and annotated).
-            save_dir (str): Directory to save results.
-            save_original (bool): Whether to save original images.
-            save_annotated (bool): Whether to save annotated images.
-            
-        Returns:
-            list: List of detection results for each image.
-        """
         start_time = time.time()
         
         # Dataloader
@@ -168,12 +141,10 @@ class YOLOv5Detector:
                 results.append(result)
         
         inference_time = time.time() - start_time
-        print(f"Inference completed in {inference_time:.3f}s")
         
         return results
     
-    def print_results(self, results):
-        """Print detection results in a formatted way."""
+    def print_results(self, results):        """Print detection results in a formatted way."""
         for result in results:
             print(f"\nDetection Results for {result['image_path']}:")
             if result['detection_count'] > 0:
@@ -192,20 +163,6 @@ class YOLOv5Detector:
 
 def run_inference(weights_path, source, img_size=640, conf_thres=0.25, save_results=True, 
                   save_dir='runs/detect/exp', save_original=True, save_annotated=True):
-    """
-    Legacy function for backward compatibility.
-    Creates a detector instance and runs inference.
-    
-    Args:
-        weights_path (str): Path to YOLOv5 weights file.
-        source (str): Path to image/video, folder, URL, or 0 for webcam.
-        img_size (int): Image size for inference.
-        conf_thres (float): Confidence threshold.
-        save_results (bool): Whether to save results.
-        save_dir (str): Directory to save results.
-        save_original (bool): Whether to save original images.
-        save_annotated (bool): Whether to save annotated images.
-    """
     detector = YOLOv5Detector(weights_path, img_size=img_size)
     results = detector.detect(source, conf_thres=conf_thres, save_results=save_results,
                              save_dir=save_dir, save_original=save_original, 
@@ -213,45 +170,45 @@ def run_inference(weights_path, source, img_size=640, conf_thres=0.25, save_resu
     detector.print_results(results)
     return results
 
-if __name__ == "__main__":
-    # Example usage
-    weights = "C:/Misogi/Vehicle-Damage-Detection/best.pt"  # your trained weights path
+# if __name__ == "__main__":
+#     # Example usage
+#     weights = "C:/Misogi/Vehicle-Damage-Detection/best.pt"  # your trained weights path
     
-    # Method 1: Using the class for efficient multiple inferences
-    print("=== Method 1: Using YOLOv5Detector class (recommended for multiple images) ===")
-    detector = YOLOv5Detector(weights)
+#     # Method 1: Using the class for efficient multiple inferences
+#     print("=== Method 1: Using YOLOv5Detector class (recommended for multiple images) ===")
+#     detector = YOLOv5Detector(weights)
     
-    # Run inference on multiple images efficiently (model loaded only once)
-    test_images = [
-        "C:/Misogi/vehicle_dataset/C4VE7MOV/car-images/front_left-15.jpeg",
-        # Add more image paths here for batch processing
-    ]
+#     # Run inference on multiple images efficiently (model loaded only once)
+#     test_images = [
+#         "C:/Misogi/vehicle_dataset/C4VE7MOV/car-images/front_left-15.jpeg",
+#         # Add more image paths here for batch processing
+#     ]
     
-    for image_path in test_images:
-        if os.path.exists(image_path):
-            # Example with enhanced storage options
-            results = detector.detect(
-                image_path, 
-                conf_thres=0.25,
-                save_results=True,
-                save_dir='runs/detect/enhanced_storage',
-                save_original=True,  # Save original images
-                save_annotated=True  # Save annotated images
-            )
-            detector.print_results(results)
-        else:
-            print(f"Image not found: {image_path}")
+#     for image_path in test_images:
+#         if os.path.exists(image_path):
+#             # Example with enhanced storage options
+#             results = detector.detect(
+#                 image_path, 
+#                 conf_thres=0.25,
+#                 save_results=True,
+#                 save_dir='runs/detect/enhanced_storage',
+#                 save_original=True,  # Save original images
+#                 save_annotated=True  # Save annotated images
+#             )
+#             detector.print_results(results)
+#         else:
+#             print(f"Image not found: {image_path}")
     
-    print("\n" + "="*60)
-    print("=== Method 2: Using legacy function (for single inference) ===")
-    # Method 2: Legacy function (loads model each time - slower for multiple images)
-    single_image = "C:/Misogi/vehicle_dataset/C4VE7MOV/car-images/front_left-15.jpeg"
-    if os.path.exists(single_image):
-        run_inference(
-            weights, 
-            single_image,
-            save_results=True,
-            save_dir='runs/detect/legacy_storage',
-            save_original=True,
-            save_annotated=True
-        )
+#     print("\n" + "="*60)
+#     print("=== Method 2: Using legacy function (for single inference) ===")
+#     # Method 2: Legacy function (loads model each time - slower for multiple images)
+#     single_image = "C:/Misogi/vehicle_dataset/C4VE7MOV/car-images/front_left-15.jpeg"
+#     if os.path.exists(single_image):
+#         run_inference(
+#             weights, 
+#             single_image,
+#             save_results=True,
+#             save_dir='runs/detect/legacy_storage',
+#             save_original=True,
+#             save_annotated=True
+#         )

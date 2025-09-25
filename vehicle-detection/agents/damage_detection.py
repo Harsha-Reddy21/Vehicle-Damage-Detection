@@ -9,26 +9,10 @@ from yolov5_inference import YOLOv5Detector
 
 class DamageDetectionAgent:
     def __init__(self, model_path="C:/Misogi/Vehicle-Damage-Detection/best.pt"):
-        """
-        Initialize damage detection agent with YOLOv5 model.
-        
-        Args:
-            model_path (str): Path to the trained YOLOv5 model weights
-        """
-        print(f"Initializing DamageDetectionAgent with model: {model_path}")
         self.detector = YOLOv5Detector(model_path)
 
     def process(self, image):
-        """
-        Process image to detect vehicle damage.
         
-        Args:
-            image: OpenCV image (BGR format)
-            
-        Returns:
-            dict: Detection results with bounding boxes and total damage area
-        """
-        # Save image temporarily for YOLOv5 inference
         temp_path = "temp_image.jpg"
         cv2.imwrite(temp_path, image)
         
@@ -68,12 +52,5 @@ class DamageDetectionAgent:
             if os.path.exists(temp_path):
                 os.remove(temp_path)
 
-
-if __name__ == "__main__":
-    image_path = "C:/Misogi/vehicle_dataset/C9LJUWLH/car-images/front_left-15.jpeg"
-    image = cv2.imread(image_path)
-    agent = DamageDetectionAgent()
-    result = agent.process(image)
-    print(result)
 
 

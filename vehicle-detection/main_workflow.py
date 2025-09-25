@@ -37,7 +37,6 @@ workflow = StateGraph(ClaimState)
 
 # 1. Image Quality Check
 def step_quality(state: ClaimState) -> ClaimState:
-    print(f"Quality Check - Processing image: {state['image_path']}")
     
     # Load image
     img = cv2.imread(state["image_path"])
@@ -47,7 +46,6 @@ def step_quality(state: ClaimState) -> ClaimState:
     # Process quality
     result = quality_agent.process(img)
     
-    print(f"Quality Check - Score: {result['quality_score']}, Issues: {result['issues']}")
     
     # Use enhanced image for further processing if available
     if result["processable"] and "enhanced_image" in result:

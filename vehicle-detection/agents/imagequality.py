@@ -5,7 +5,6 @@ class ImageQualityAgent:
     def __init__(self, quality_threshold=0.6):
         self.quality_threshold = quality_threshold
 
-    # --- 1. Image quality assessment ---
     def estimate_blur(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
@@ -32,7 +31,6 @@ class ImageQualityAgent:
 
     # --- 2. Image enhancement ---
     def enhance_image(self, image):
-        # Convert to LAB for histogram equalization
         lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
         lab[:, :, 0] = cv2.equalizeHist(lab[:, :, 0])  # L channel
         enhanced = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
@@ -69,27 +67,3 @@ class ImageQualityAgent:
             "processable": processable,
             "manipulation_detected": manipulation_detected
         }
-
-# ------------------------------
-# Demo
-# ------------------------------
-if __name__ == "__main__":
-    image_path = "C:/Misogi/vehicle_dataset/C9LJUWLH/car-images/front_left-15.jpeg" # replace with your image
-    image = cv2.imread(image_path)
-
-    if image is None:
-        print("Failed to load image. Check the path!")
-        exit()
-
-    agent = ImageQualityAgent()
-    result = agent.process(image)
-
-    print("Quality Score:", result["quality_score"])
-    print("Issues Detected:", result["issues"])
-    print("Processable:", result["processable"])
-    print("Manipulation Detected:", result["manipulation_detected"])
-
-    combined = np.hstack((image, result["enhanced_image"]))
-    cv2.imshow("Original (Left) vs Enhanced (Right)", combined)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()

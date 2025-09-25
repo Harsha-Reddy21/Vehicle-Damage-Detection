@@ -24,12 +24,4 @@ class PartIdentificationAgent:
 
 
 
-if __name__ == "__main__":
-    image_path = "C:/Misogi/vehicle_dataset/C9LJUWLH/car-images/front_left-15.jpeg"
-    image = cv2.imread(image_path)
-    damage_bboxes = [{"bbox": [100, 200, 400, 500]}]
-    agent = PartIdentificationAgent()
-    result = agent.process(image, damage_bboxes)
-    print(result)
-
 
