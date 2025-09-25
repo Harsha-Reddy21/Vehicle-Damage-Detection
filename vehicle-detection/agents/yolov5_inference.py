@@ -52,15 +52,18 @@ class YOLOv5Detector:
         print(f"Model loaded successfully in {load_time:.2f}s")
         print(f"Classes: {list(self.names.values())}")
     
-    def detect(self, source, conf_thres=0.25, save_results=True, save_dir='runs/detect/exp'):
+    def detect(self, source, conf_thres=0.25, save_results=True, save_dir='runs/detect/exp', 
+               save_original=True, save_annotated=True):
         """
         Run inference on a single image or batch of images.
         
         Args:
             source (str): Path to image/video, folder, URL, or 0 for webcam.
             conf_thres (float): Confidence threshold (default=0.25).
-            save_results (bool): Whether to save annotated results.
+            save_results (bool): Whether to save results (controls both original and annotated).
             save_dir (str): Directory to save results.
+            save_original (bool): Whether to save original images.
+            save_annotated (bool): Whether to save annotated images.
             
         Returns:
             list: List of detection results for each image.
@@ -109,25 +112,60 @@ class YOLOv5Detector:
                         }
                         detections.append(detection)
 
-                    if save_results:
-                        # Annotate image
-                        annotator = Annotator(im0, line_width=3, example=str(self.names))
-                        for *xyxy, conf, cls in reversed(det):
-                            class_name = self.names[int(cls)]
-                            label = f'{class_name} {conf:.2f}'
-                            annotator.box_label(xyxy, label, color=colors(int(cls), True))
-
-                        # Save annotated image
-                        im0 = annotator.result()
-                        save_path = str(Path(save_dir) / Path(p).name)
-                        os.makedirs(Path(save_path).parent, exist_ok=True)
-                        cv2.imwrite(save_path, im0)
+                # Handle image saving
+                if save_results and (save_original or save_annotated):
+                    # Create save directories
+                    base_save_dir = Path(save_dir)
+                    original_dir = base_save_dir / 'original'
+                    annotated_dir = base_save_dir / 'annotated'
+                    
+                    # Get filename for saving
+                    image_name = Path(p).name
+                    
+                    # Save original image
+                    if save_original:
+                        original_dir.mkdir(parents=True, exist_ok=True)
+                        original_path = original_dir / image_name
+                        cv2.imwrite(str(original_path), im0s.copy())
+                    
+                    # Save annotated image (only if there are detections or user wants all images)
+                    if save_annotated:
+                        annotated_dir.mkdir(parents=True, exist_ok=True)
+                        annotated_path = annotated_dir / image_name
+                        
+                        if len(det):
+                            # Annotate image with detections
+                            annotator = Annotator(im0, line_width=3, example=str(self.names))
+                            for *xyxy, conf, cls in reversed(det):
+                                class_name = self.names[int(cls)]
+                                label = f'{class_name} {conf:.2f}'
+                                annotator.box_label(xyxy, label, color=colors(int(cls), True))
+                            im0_annotated = annotator.result()
+                        else:
+                            # Save copy of original if no detections
+                            im0_annotated = im0.copy()
+                        
+                        cv2.imwrite(str(annotated_path), im0_annotated)
                 
-                results.append({
+                # Prepare result with save paths
+                result = {
                     'image_path': p,
                     'detections': detections,
-                    'detection_count': len(detections)
-                })
+                    'detection_count': len(detections),
+                    'saved_paths': {}
+                }
+                
+                # Add saved paths to result if images were saved
+                if save_results and (save_original or save_annotated):
+                    base_save_dir = Path(save_dir)
+                    image_name = Path(p).name
+                    
+                    if save_original:
+                        result['saved_paths']['original'] = str(base_save_dir / 'original' / image_name)
+                    if save_annotated:
+                        result['saved_paths']['annotated'] = str(base_save_dir / 'annotated' / image_name)
+                
+                results.append(result)
         
         inference_time = time.time() - start_time
         print(f"Inference completed in {inference_time:.3f}s")
@@ -145,14 +183,33 @@ class YOLOv5Detector:
                 print(f"  Total detections: {result['detection_count']}")
             else:
                 print("  No detections found")
+            
+            # Print saved paths if available
+            if 'saved_paths' in result and result['saved_paths']:
+                print("  Saved images:")
+                for save_type, path in result['saved_paths'].items():
+                    print(f"    {save_type.capitalize()}: {path}")
 
-def run_inference(weights_path, source, img_size=640, conf_thres=0.25):
+def run_inference(weights_path, source, img_size=640, conf_thres=0.25, save_results=True, 
+                  save_dir='runs/detect/exp', save_original=True, save_annotated=True):
     """
     Legacy function for backward compatibility.
     Creates a detector instance and runs inference.
+    
+    Args:
+        weights_path (str): Path to YOLOv5 weights file.
+        source (str): Path to image/video, folder, URL, or 0 for webcam.
+        img_size (int): Image size for inference.
+        conf_thres (float): Confidence threshold.
+        save_results (bool): Whether to save results.
+        save_dir (str): Directory to save results.
+        save_original (bool): Whether to save original images.
+        save_annotated (bool): Whether to save annotated images.
     """
     detector = YOLOv5Detector(weights_path, img_size=img_size)
-    results = detector.detect(source, conf_thres=conf_thres)
+    results = detector.detect(source, conf_thres=conf_thres, save_results=save_results,
+                             save_dir=save_dir, save_original=save_original, 
+                             save_annotated=save_annotated)
     detector.print_results(results)
     return results
 
@@ -172,7 +229,15 @@ if __name__ == "__main__":
     
     for image_path in test_images:
         if os.path.exists(image_path):
-            results = detector.detect(image_path, conf_thres=0.25)
+            # Example with enhanced storage options
+            results = detector.detect(
+                image_path, 
+                conf_thres=0.25,
+                save_results=True,
+                save_dir='runs/detect/enhanced_storage',
+                save_original=True,  # Save original images
+                save_annotated=True  # Save annotated images
+            )
             detector.print_results(results)
         else:
             print(f"Image not found: {image_path}")
@@ -182,4 +247,11 @@ if __name__ == "__main__":
     # Method 2: Legacy function (loads model each time - slower for multiple images)
     single_image = "C:/Misogi/vehicle_dataset/C4VE7MOV/car-images/front_left-15.jpeg"
     if os.path.exists(single_image):
-        run_inference(weights, single_image)
+        run_inference(
+            weights, 
+            single_image,
+            save_results=True,
+            save_dir='runs/detect/legacy_storage',
+            save_original=True,
+            save_annotated=True
+        )
