@@ -3,3 +3,6 @@ uvicorn
 numpy>=1.24.0
 opencv-python>=4.7.0
 ultralytics
+langgraph
+pandas
+seaborn
